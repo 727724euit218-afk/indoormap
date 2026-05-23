@@ -64,7 +64,7 @@ function ProgressSteps() {
   );
 }
 
-function CampusMap({ selectedName }) {
+function CampusMap({ selectedName, onSelectSource }) {
   return (
     <div className="src-map-card">
       <div className="src-map-head">
@@ -107,6 +107,7 @@ function CampusMap({ selectedName }) {
           aria-label="Select main entrance"
           animate={{ y: [0, -5, 0] }}
           transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+          onClick={() => onSelectSource('entrance')}
         >
           <MapPin size={18} />
         </motion.button>
@@ -117,6 +118,7 @@ function CampusMap({ selectedName }) {
           aria-label="Select auditorium"
           animate={{ y: [0, -4, 0] }}
           transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
+          onClick={() => onSelectSource('auditorium')}
         >
           <MapPin size={18} />
         </motion.button>
@@ -219,7 +221,7 @@ function SourceSelectionPage() {
             <motion.div className="src-card src-detected-card" variants={fadeUp} custom={2} initial="hidden" animate="visible">
               <div className="src-card-label">
                 <Sparkles size={14} />
-                QR Detected Location
+                {selectedSource.detected ? 'QR Detected Location' : 'Selected Location'}
               </div>
 
               <div className="src-detected-body">
@@ -231,9 +233,9 @@ function SourceSelectionPage() {
                   <span className="src-photo-path" />
                 </div>
                 <div className="src-detected-copy">
-                  <strong>Main Entrance Gate</strong>
-                  <span>Current Source</span>
-                  <p>KGiSL Campus</p>
+                  <strong>{selectedSource.name}</strong>
+                  <span>{selectedSource.detected ? 'Current Source' : 'Selected Location'}</span>
+                  <p>{selectedSource.meta !== 'Current Source' ? selectedSource.meta : 'KGiSL Campus'}</p>
                 </div>
               </div>
 
@@ -249,9 +251,9 @@ function SourceSelectionPage() {
                 colors={['#22c55e', '#38bdf8', '#a7f3d0']}
                 fillOpacity={0.18}
               >
-                <button className="src-use-btn" type="button" onClick={() => chooseSource('entrance')}>
+                <button className="src-use-btn" type="button" onClick={continueToDestination}>
                   <Check size={14} />
-                  Use Current Source
+                  Confirm & Continue
                 </button>
               </BorderGlow>
             </motion.div>
@@ -280,39 +282,44 @@ function SourceSelectionPage() {
                           value={query}
                           onChange={(event) => setQuery(event.target.value)}
                           placeholder="Search locations"
+                          autoComplete="off"
                         />
+                      </div>
+                      <div className="src-source-list">
+                        {filteredSources.map((source, index) => {
+                          const Icon = source.icon;
+                          const isSelected = selectedId === source.id;
+                          return (
+                            <motion.button
+                              key={source.id}
+                              type="button"
+                              className={`src-source-row ${isSelected ? 'is-selected' : ''}`}
+                              onClick={() => chooseSource(source.id)}
+                              initial={{ opacity: 0, x: -12 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.05 + index * 0.035 }}
+                            >
+                              <span className="src-source-icon"><Icon size={15} /></span>
+                              <span>{source.name}</span>
+                              {isSelected && <Check size={15} className="src-row-check" />}
+                            </motion.button>
+                          );
+                        })}
+                        {filteredSources.length === 0 && (
+                          <div className="src-no-results">
+                            No locations found
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
-
-              <div className="src-source-list">
-                {filteredSources.map((source, index) => {
-                  const Icon = source.icon;
-                  const isSelected = selectedId === source.id;
-                  return (
-                    <motion.button
-                      key={source.id}
-                      type="button"
-                      className={`src-source-row ${isSelected ? 'is-selected' : ''}`}
-                      onClick={() => chooseSource(source.id)}
-                      initial={{ opacity: 0, x: -12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.2 + index * 0.035 }}
-                    >
-                      <span className="src-source-icon"><Icon size={15} /></span>
-                      <span>{source.name}</span>
-                      {isSelected && <Check size={15} className="src-row-check" />}
-                    </motion.button>
-                  );
-                })}
-              </div>
             </motion.div>
           </div>
 
           <motion.div variants={fadeUp} custom={4} initial="hidden" animate="visible">
-            <CampusMap selectedName={selectedSource.name} />
+            <CampusMap selectedName={selectedSource.name} onSelectSource={chooseSource} />
           </motion.div>
         </section>
 

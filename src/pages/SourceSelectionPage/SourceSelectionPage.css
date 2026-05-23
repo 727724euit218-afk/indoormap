@@ -460,6 +460,15 @@
   flex-direction: column;
   gap: .35rem;
   margin-top: .7rem;
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.src-no-results {
+  padding: 1rem;
+  text-align: center;
+  color: var(--src-faint);
+  font-size: .8rem;
 }
 
 .src-source-row {

@@ -6,7 +6,11 @@ import {
   ArrowRight, Map, Zap, Home, ChevronRight
 } from 'lucide-react';
 import BorderGlow from '../../components/shared/BorderGlow';
+import LottieModule from 'lottie-react';
+import locationAnimation from '../../assets/location.json';
 import '../../index.css';
+
+const Lottie = LottieModule.default || LottieModule;
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -166,10 +170,23 @@ export default function LandingWelcomePage() {
         <div className="sp-content">
 
           {/* Heading */}
-          <motion.h1 className="sp-heading" custom={1} variants={fadeUp} initial="hidden" animate="visible">
-            Navigate KGiSL Campus.<br />
-            <span className="sp-green">Fast.</span>
-          </motion.h1>
+          <motion.div 
+            style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}
+            custom={1} variants={fadeUp} initial="hidden" animate="visible"
+          >
+            <div style={{ textAlign: 'center' }}>
+              <h1 className="sp-heading" style={{ margin: 0 }}>
+                Navigate KGiSL Campus.<br />
+                <span className="sp-green">Fast.</span>
+              </h1>
+            </div>
+            <div style={{ flexShrink: 0, width: 140, height: 140 }}>
+              <Lottie 
+                animationData={locationAnimation} 
+                loop={true} 
+              />
+            </div>
+          </motion.div>
 
           {/* Sub */}
           <motion.p className="sp-sub" custom={2} variants={fadeUp} initial="hidden" animate="visible">
@@ -260,4 +277,3 @@ export default function LandingWelcomePage() {
     </div>
   );
 }
-
