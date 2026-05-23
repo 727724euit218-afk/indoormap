@@ -1,0 +1,388 @@
+/* ── Design Tokens ─────────────────────────────────────── */
+:root {
+  --bg:          #ffffff;
+  --bg-alt:      #f8fafc;
+  --ink:         #0f172a;
+  --ink-muted:   #64748b;
+  --ink-faint:   #94a3b8;
+  --green-50:    #f0fdf4;
+  --green-100:   #dcfce7;
+  --green-200:   #bbf7d0;
+  --green-400:   #4ade80;
+  --green-500:   #22c55e;
+  --green-600:   #16a34a;
+  --green-700:   #15803d;
+  --border:      #e2e8f0;
+  --border-lt:   #f1f5f9;
+  --shadow-sm:   0 1px 4px rgba(0,0,0,.06);
+  --shadow-md:   0 4px 16px rgba(0,0,0,.08);
+  --shadow-green:0 6px 24px rgba(22,163,74,.3);
+  --font:        'Inter', system-ui, sans-serif;
+  --font-d:      'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+.dark {
+  --bg:        #060d14;
+  --bg-alt:    #0d1b2a;
+  --ink:       #f0f6ff;
+  --ink-muted: #94a3b8;
+  --ink-faint: #64748b;
+  --border:    #1e2d3d;
+  --border-lt: #162030;
+  --green-50:  rgba(22,163,74,.08);
+  --green-100: rgba(22,163,74,.15);
+  --green-200: rgba(22,163,74,.22);
+}
+
+/* ── Reset ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;            /* No page scroll — single screen */
+  transition: background .3s, color .3s;
+}
+h1,h2,h3 { font-family: var(--font-d); letter-spacing: -.03em; }
+button { font-family: var(--font); }
+a { text-decoration: none; color: inherit; }
+
+/* ── Single-page root ───────────────────────────────────── */
+.sp-root {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;              /* Fills viewport exactly */
+  overflow: hidden;
+}
+
+/* ── Navbar ─────────────────────────────────────────────── */
+.sp-nav {
+  flex-shrink: 0;
+  background: rgba(255,255,255,.88);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border-bottom: 1px solid var(--border-lt);
+  z-index: 50;
+}
+.dark .sp-nav { background: rgba(6,13,20,.88); border-bottom-color: var(--border); }
+.sp-nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 3.75rem;
+}
+
+/* Logo */
+.sp-logo { display: flex; align-items: center; gap: .5rem; cursor: pointer; }
+.sp-logo-icon {
+  width: 2rem; height: 2rem;
+  background: linear-gradient(135deg, var(--green-600), var(--green-400));
+  border-radius: .5rem;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; box-shadow: 0 2px 8px rgba(22,163,74,.35);
+  flex-shrink: 0;
+}
+.sp-logo-name { font-family: var(--font-d); font-size: 1rem; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; }
+.sp-logo-sub  { font-size: .62rem; color: var(--ink-muted); font-weight: 500; margin-top: .05rem; }
+
+/* Icon button */
+.sp-icon-btn {
+  width: 2.2rem; height: 2.2rem;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: .6rem;
+  background: var(--bg); color: var(--ink);
+  cursor: pointer; transition: all .18s ease;
+}
+.sp-icon-btn:hover { background: var(--green-50); border-color: var(--green-200); color: var(--green-600); }
+
+/* ── Main body (fills remaining height) ─────────────────── */
+.sp-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr;   /* Mobile: stack */
+  gap: .9rem;
+  padding: .9rem 1rem 1rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  align-items: center;
+  overflow: hidden;
+}
+@media (min-width: 768px) {
+  .sp-body { grid-template-columns: 1fr 1fr; gap: 2.5rem; padding: 2rem 2rem; }
+}
+@media (min-width: 1024px) {
+  .sp-body { padding: 2rem 3rem; }
+}
+
+/* ── Text content ───────────────────────────────────────── */
+.sp-content { display: flex; flex-direction: column; gap: 0.7rem; }
+
+/* Heading */
+.sp-heading {
+  font-size: clamp(1.7rem, 5vw, 2.8rem);
+  font-weight: 900; line-height: 1.12; color: var(--ink);
+}
+.sp-green {
+  background: linear-gradient(120deg, var(--green-600), var(--green-400));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+/* Sub */
+.sp-sub {
+  font-size: clamp(.82rem, 2.2vw, 1rem);
+  color: var(--ink-muted); line-height: 1.65;
+  max-width: 420px;
+}
+
+/* Feature chips row */
+.sp-chips { display: flex; flex-wrap: wrap; gap: .45rem; }
+.sp-chip {
+  display: inline-flex; align-items: center; gap: .35rem;
+  background: var(--bg-alt); border: 1px solid var(--border);
+  border-radius: 9999px; padding: .28rem .7rem;
+  font-size: .72rem; font-weight: 600; color: var(--ink-muted);
+}
+.dark .sp-chip { background: var(--bg-alt); }
+
+/* Primary button */
+.sp-btn-primary {
+  display: inline-flex; align-items: center; gap: .45rem;
+  background: var(--green-600); color: #fff;
+  font-weight: 700; font-size: .9rem;
+  padding: .75rem 1.5rem; border-radius: 9999px; border: none; cursor: pointer;
+  box-shadow: var(--shadow-green); transition: all .18s ease;
+}
+.sp-btn-primary:hover { background: var(--green-700); transform: translateY(-1px); }
+.sp-btn-primary:active { transform: translateY(0); }
+
+.sp-cta { font-size: 1rem; padding: .85rem 1.85rem; width: fit-content; margin-top: .25rem; }
+@media (max-width: 767px) { .sp-cta { width: 100%; justify-content: center; } }
+
+.sp-cta-glow-wrap {
+  width: fit-content;
+  margin-top: .25rem;
+}
+.sp-cta-glow {
+  border: 0;
+  box-shadow: var(--shadow-green);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.sp-cta-glow .border-glow-inner {
+  overflow: visible;
+}
+.sp-cta-glow .sp-cta {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  margin-top: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.sp-cta-glow .sp-cta:hover {
+  background: transparent;
+}
+@media (max-width: 767px) {
+  .sp-cta-glow-wrap,
+  .sp-cta-glow {
+    width: 100%;
+  }
+}
+
+/* ── Map panel ──────────────────────────────────────────── */
+.sp-map-panel {
+  position: relative;
+  border-radius: 1.25rem;
+  overflow: visible;
+  border: 1.5px solid var(--border);
+  background: var(--bg-alt);
+  box-shadow: var(--shadow-md);
+  /* Constrain height on mobile so it doesn't overflow */
+  max-height: 36dvh;
+  aspect-ratio: 16/10;
+}
+.dark .sp-map-panel { background: #0d1b2a; border-color: var(--border); }
+@media (min-width: 768px) { .sp-map-panel { max-height: none; aspect-ratio: 4/3; } }
+
+/* Floating info chips on map */
+.sp-map-chip {
+  position: absolute;
+  background: rgba(255,255,255,.95);
+  border: 1px solid rgba(255,255,255,.5);
+  backdrop-filter: blur(12px);
+  border-radius: .875rem;
+  padding: .45rem .75rem;
+  display: flex; align-items: center; gap: .45rem;
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.dark .sp-map-chip { background: rgba(13,27,42,.95); border-color: rgba(255,255,255,.1); }
+.sp-map-chip-top { top: -.75rem; right: .75rem; }
+.sp-map-chip-bot { bottom: -.75rem; left: .75rem; }
+.sp-chip-title { font-size: .73rem; font-weight: 700; color: var(--ink); }
+.sp-chip-meta  { font-size: .65rem; color: var(--ink-muted); }
+.sp-dot { width: .5rem; height: .5rem; border-radius: 50%; flex-shrink: 0; }
+.sp-dot-green { background: var(--green-500); box-shadow: 0 0 0 3px rgba(34,197,94,.2); }
+.sp-dot-blue  { background: #3b82f6;          box-shadow: 0 0 0 3px rgba(59,130,246,.2); }
+
+/* ── Drawer overlay ─────────────────────────────────────── */
+.sp-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,.38);
+  backdrop-filter: blur(3px);
+}
+.sp-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 101;
+  width: min(300px, 82vw);
+  background: var(--bg);
+  box-shadow: -16px 0 48px rgba(0,0,0,.12);
+  padding: 1.25rem;
+  display: flex; flex-direction: column; gap: 0;
+}
+.sp-drawer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+.sp-drawer-link {
+  display: flex; align-items: center; gap: .75rem;
+  padding: .75rem .875rem; border-radius: .75rem;
+  font-weight: 600; font-size: .88rem; color: var(--ink);
+  background: none; border: none; cursor: pointer; width: 100%;
+  text-align: left; transition: background .15s;
+}
+.sp-drawer-link:hover { background: var(--green-50); color: var(--green-700); }
+.sp-drawer-footer {
+  margin-top: auto; padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 767px) {
+  body {
+    overflow: auto;
+  }
+
+  .sp-root {
+    min-height: 100dvh;
+    height: auto;
+  }
+
+  .sp-nav-inner {
+    height: 3.35rem;
+    padding: 0 .95rem;
+  }
+
+  .sp-logo-icon {
+    width: 1.85rem;
+    height: 1.85rem;
+    border-radius: .45rem;
+  }
+
+  .sp-logo-name {
+    font-size: .95rem;
+  }
+
+  .sp-logo-sub {
+    display: none;
+  }
+
+  .sp-icon-btn {
+    width: 2rem;
+    height: 2rem;
+    border-radius: .55rem;
+  }
+
+  .sp-body {
+    min-height: calc(100dvh - 3.35rem);
+    align-content: center;
+  }
+
+  .sp-content {
+    gap: .6rem;
+  }
+
+  .sp-heading {
+    font-size: clamp(2rem, 11vw, 2.75rem);
+    line-height: 1.04;
+  }
+
+  .sp-sub {
+    max-width: 21rem;
+    font-size: .9rem;
+    line-height: 1.5;
+  }
+
+  .sp-chip {
+    padding: .26rem .62rem;
+    font-size: .68rem;
+  }
+
+  .sp-cta {
+    min-height: 3rem;
+    padding: .85rem 1.15rem;
+  }
+
+  .sp-cta-glow {
+    --glow-padding: 20px;
+  }
+
+  .sp-map-panel {
+    width: 100%;
+    max-height: 31dvh;
+    min-height: 13rem;
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+
+  .sp-map-chip {
+    border-radius: .7rem;
+    gap: .35rem;
+    padding: .36rem .55rem;
+  }
+
+  .sp-map-chip-top {
+    top: .5rem;
+    right: .5rem;
+  }
+
+  .sp-map-chip-bot {
+    bottom: .5rem;
+    left: .5rem;
+  }
+
+  .sp-chip-title {
+    font-size: .66rem;
+  }
+
+  .sp-chip-meta {
+    font-size: .58rem;
+  }
+
+}
+
+@media (max-width: 380px) {
+  .sp-body {
+    padding: .75rem .85rem .9rem;
+    gap: .7rem;
+  }
+
+  .sp-heading {
+    font-size: clamp(1.8rem, 10vw, 2.25rem);
+  }
+
+  .sp-sub {
+    font-size: .82rem;
+  }
+
+  .sp-map-panel {
+    min-height: 11.5rem;
+    max-height: 29dvh;
+  }
+}
+
+/* ── Scrollbar (hidden) ─────────────────────────────────── */
+::-webkit-scrollbar { width: 0; }
+
