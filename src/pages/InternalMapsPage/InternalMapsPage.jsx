@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import { ArrowLeft, Layers, MapPin, ZoomIn, ZoomOut, Maximize } from 'lucide-react';
+import { ArrowLeft, Layers, MapPin, ZoomIn, ZoomOut, Maximize, Sun, Moon } from 'lucide-react';
 import './InternalMapsPage.css';
+import '../../index.css';
 
 // Floor names mapping for cleaner display
 const FLOOR_NAMES = {
@@ -128,15 +129,31 @@ export default function InternalMapsPage() {
   const buildingName = bId === 3 ? 'KGiSL Building' : 'IT Tower';
 
   return (
-    <div className="imp-container" data-theme={isDark ? 'dark' : 'light'}>
-      {/* ── Header ── */}
-      <header className="imp-header">
-        <button className="imp-back-btn" onClick={handleGoBack}>
-          <ArrowLeft size={20} />
-        </button>
-        <div className="imp-title-group">
-          <h2>{buildingName}</h2>
-          <span>Indoor Navigation</span>
+    <div className="sp-root" data-theme={isDark ? 'dark' : 'light'}>
+      {/* ── Navbar Consistent with LandingPage ── */}
+      <header className="sp-nav">
+        <div className="sp-nav-inner" style={{ maxWidth: '100%', padding: '0 1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button className="sp-icon-btn" onClick={handleGoBack} aria-label="Go Back">
+              <ArrowLeft size={15} />
+            </button>
+            <div className="sp-logo">
+              <div className="sp-logo-icon" style={{ background: 'linear-gradient(135deg, var(--green-600), var(--green-400))' }}>
+                <Layers size={14} />
+              </div>
+              <div>
+                <div className="sp-logo-name">{buildingName}</div>
+                <div className="sp-logo-sub">Indoor Navigation</div>
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <button id="theme-toggle" className="sp-icon-btn" onClick={() => setIsDark(d => !d)} aria-label="Toggle theme">
+              <motion.div key={isDark ? 'sun' : 'moon'} initial={{ rotate: -20, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} transition={{ duration: 0.2 }}>
+                {isDark ? <Sun size={15} /> : <Moon size={15} />}
+              </motion.div>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -144,7 +161,7 @@ export default function InternalMapsPage() {
         {/* ── Sidebar: Floor Selector ── */}
         <aside className="imp-sidebar">
           <div className="imp-sidebar-header">
-            <Layers size={18} />
+            <Layers size={16} style={{ color: 'var(--green-600)' }} />
             <h3>Select Floor</h3>
           </div>
           <div className="imp-floor-list">
@@ -153,8 +170,16 @@ export default function InternalMapsPage() {
                 key={floor.id}
                 className={`imp-floor-btn ${activeFloor.id === floor.id ? 'active' : ''}`}
                 onClick={() => handleFloorSelect(floor)}
+                style={{ position: 'relative', overflow: 'hidden' }}
               >
-                {floor.name}
+                {activeFloor.id === floor.id && (
+                  <motion.div
+                    layoutId="activeFloorPill"
+                    className="imp-active-pill"
+                    transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                  />
+                )}
+                <span style={{ position: 'relative', zIndex: 2 }}>{floor.name}</span>
               </button>
             ))}
           </div>
@@ -188,9 +213,9 @@ export default function InternalMapsPage() {
                     ) : (
                       <motion.img
                         key={activeFloor.id}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.4 }}
+                        initial={{ opacity: 0, scale: 0.96 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
                         src={activeFloor.imgPath}
                         alt={`${buildingName} ${activeFloor.name}`}
                         className="imp-map-image"
