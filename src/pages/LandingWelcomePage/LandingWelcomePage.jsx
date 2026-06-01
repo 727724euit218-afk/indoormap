@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   MapPin, Navigation, Moon, Sun, Menu, X,
-  ArrowRight, Map, Zap, Home, ChevronRight
+  ArrowRight, Map, Zap, Home, ChevronRight, Layers
 } from 'lucide-react';
 import BorderGlow from '../../components/shared/BorderGlow';
 import LottieModule from 'lottie-react';
@@ -105,6 +105,7 @@ export default function LandingWelcomePage() {
 
   const drawerLinks = [
     { icon: Home,       label: 'Home', action: () => setMenuOpen(false) },
+    { icon: Layers,     label: 'Indoor Maps', action: () => { setMenuOpen(false); navigate('/indoor/3'); } },
     { icon: Navigation, label: 'Start Navigation', action: () => { setMenuOpen(false); goNavigate(); } },
   ];
 

@@ -5,7 +5,7 @@ import {
   MapPin, Edit3, Check, X, Copy
 } from 'lucide-react';
 import campusMapImg from '../../assets/campus_map.jpg';
-import { landmarks as originalLandmarks } from '../../components/CampusMap/campusData';
+import { useMapContext } from '../../context/MapContext';
 import './NodeEditorPage.css';
 
 const VIEWBOX_W = 855;
@@ -39,7 +39,15 @@ export default function NodeEditorPage() {
   }, [isDark]);
 
   /* ── Node state ── */
-  const [nodes, setNodes] = useState(() => cloneLandmarks(originalLandmarks));
+  const { landmarks = [], loading } = useMapContext() || {};
+  const [nodes, setNodes] = useState([]);
+  
+  useEffect(() => {
+    if (!loading && landmarks.length > 0 && nodes.length === 0) {
+      setNodes(cloneLandmarks(landmarks));
+    }
+  }, [landmarks, loading]);
+
   const [selectedId, setSelectedId] = useState(null);
   const [editField, setEditField] = useState({}); // live-edited values for panel
 
@@ -145,7 +153,7 @@ export default function NodeEditorPage() {
 
   /* ── Reset to original ── */
   const resetNodes = () => {
-    setNodes(cloneLandmarks(originalLandmarks));
+    setNodes(cloneLandmarks(landmarks));
     setSelectedId(null);
     showToast('Reset to original data', 'warn');
   };

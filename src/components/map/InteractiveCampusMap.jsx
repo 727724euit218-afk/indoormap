@@ -1,10 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { useNavigate } from 'react-router-dom';
 import './InteractiveCampusMap.css';
 import campusMapImg from '../../assets/campus_map.jpg';
-import { getNearestNode, findShortestPath } from '../../hooks/useCampusRoute';
-import { landmarks } from '../CampusMap/campusData';
+
+import { useMapContext } from '../../context/MapContext';
+import { useCampusRouting } from '../../hooks/useCampusRoute';
+const DEBUG = true; // enable debug overlay
 
 // Coordinate system: positions in campusData are direct SVG [x, y] pixels.
 // viewBox is "0 0 855 1079" matching the campus map image dimensions.
@@ -61,27 +64,25 @@ export default function InteractiveCampusMap({
   const isDark = theme === 'dark';
   const [calibrationPoints, setCalibrationPoints] = useState([]);
   const [isInspectorMode, setIsInspectorMode] = useState(false);
+  const navigate = useNavigate();
 
-  // Build landmark lookup map once
-  const lmMap = useMemo(() => {
-    const m = {};
-    for (const lm of landmarks) m[lm.id] = lm;
-    return m;
-  }, []);
 
-  // Compute route points: findShortestPath now returns landmark IDs directly
+  const { landmarks = [], junctions = [], junctionEdges = [] } = useMapContext() || {};
+  const { findShortestPath, getNodePosition } = useCampusRouting();
+
+  // Compute route path: findShortestPath returns mixed landmark+junction IDs.
+  // getNodePosition resolves SVG position for each, so line follows real roads.
   const routePoints = useMemo(() => {
     if (!source || !destination) return [];
     const pathIds = findShortestPath(source.id, destination.id);
     if (!pathIds || pathIds.length < 2) {
-      // Fallback: straight line between source and destination
       return [mapToSvg(source.position), mapToSvg(destination.position)];
     }
     return pathIds
-      .map(id => lmMap[id])
+      .map(id => getNodePosition(id))
       .filter(Boolean)
-      .map(lm => mapToSvg(lm.position));
-  }, [source, destination, lmMap]);
+      .map(pos => mapToSvg(pos));
+  }, [source, destination]);
 
   const userPos = useMemo(
     () => getPositionAtProgress(routePoints, progress),
@@ -155,8 +156,16 @@ export default function InteractiveCampusMap({
                 const isSource = source && source.id === lm.id;
                 const isDest   = destination && destination.id === lm.id;
                 const highlight = isSource || isDest;
+                
+                const hasIndoor = lm.id === 3; // KGiSL Building
+
                 return (
-                  <g key={lm.id} transform={`translate(${x},${y})`} style={{ pointerEvents: 'none' }}>
+                  <g 
+                    key={lm.id} 
+                    transform={`translate(${x},${y})`} 
+                    style={{ pointerEvents: hasIndoor ? 'auto' : 'none', cursor: hasIndoor ? 'pointer' : 'default' }}
+                    onClick={() => hasIndoor && navigate(`/indoor/${lm.id}`)}
+                  >
                     {highlight && (
                       <circle
                         r="16"
@@ -164,11 +173,19 @@ export default function InteractiveCampusMap({
                         className="icm-marker-pulse"
                       />
                     )}
+                    {hasIndoor && !highlight && (
+                      <circle
+                        r="16"
+                        fill="rgba(59, 130, 246, 0.2)"
+                        className="icm-indoor-pulse"
+                        style={{ pointerEvents: 'none' }}
+                      />
+                    )}
                     <circle
                       r="11"
                       fill={highlight ? (isSource ? '#22c55e' : '#ef4444') : fill}
-                      stroke="#ffffff"
-                      strokeWidth="1.5"
+                      stroke={hasIndoor ? '#3b82f6' : '#ffffff'}
+                      strokeWidth={hasIndoor ? "2" : "1.5"}
                     />
                     <text
                       textAnchor="middle"
@@ -204,6 +221,35 @@ export default function InteractiveCampusMap({
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
+                </>
+              )}
+
+              {DEBUG && (
+                <>
+                  {junctionEdges.map((e, i) => {
+                    const from = junctions.find(j => j.id === e.from);
+                    const to   = junctions.find(j => j.id === e.to);
+                    return from && to ? (
+                      <line
+                        key={i}
+                        x1={from.position[0]}
+                        y1={from.position[1]}
+                        x2={to.position[0]}
+                        y2={to.position[1]}
+                        stroke="#ff00ff"
+                        strokeWidth={2}
+                      />
+                    ) : null;
+                  })}
+                  {junctions.map(j => (
+                    <circle
+                      key={j.id}
+                      cx={j.position[0]}
+                      cy={j.position[1]}
+                      r={4}
+                      fill="#ff00ff"
+                    />
+                  ))}
                 </>
               )}
 

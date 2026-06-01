@@ -17,10 +17,11 @@ import {
   Sparkles,
   Sun,
   Utensils,
+  WifiOff,
 } from 'lucide-react';
 import BorderGlow from '../../components/shared/BorderGlow';
 import './SourceSelectionPage.css';
-import { landmarks } from '../../components/CampusMap/campusData';
+import { fetchLocations } from '../../services/api';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -40,15 +41,17 @@ const categoryIconMap = {
   entry:    MapPin,
 };
 
-// Derive sources from landmarks – mark Node 1 (Main Entrance Gate) as detected
-const sources = landmarks.map(lm => ({
-  id:       String(lm.id),
-  name:     lm.name,
-  meta:     lm.description,
-  icon:     categoryIconMap[lm.category] || MapPin,
-  detected: lm.id === 1,
-  landmark: lm,
-}));
+// toSource: converts a location object into the shape this page uses
+function toSource(lm, detectedId) {
+  return {
+    id:       String(lm.id),
+    name:     lm.name,
+    meta:     lm.description || lm.building_name || 'KGiSL Campus',
+    icon:     categoryIconMap[lm.category] || MapPin,
+    detected: String(lm.id) === String(detectedId),
+    landmark: lm,
+  };
+}
 
 function ProgressSteps() {
   const steps = ['Source', 'Destination', 'Preview', 'Navigate', 'Arrived'];
@@ -134,9 +137,23 @@ function SourceSelectionPage() {
   const [isDark, setIsDark] = useState(() => {
     return localStorage.getItem('wayfinder-theme') === 'dark';
   });
-  const [selectedId, setSelectedId] = useState('1'); // Node 1 = Main Entrance Gate
+  const [selectedId, setSelectedId] = useState('1'); // default: Main Entrance Gate
   const [query, setQuery] = useState('');
   const [pickerOpen, setPickerOpen] = useState(false);
+
+  // ── Live data from backend ──────────────────────────────
+  const [sources, setSources] = useState([]);
+  const [dataSource, setDataSource] = useState('loading');
+
+  useEffect(() => {
+    fetchLocations().then(({ data, source }) => {
+      // Try to find ID=1 (Main Entrance); fallback to first item
+      const detectedId = data.find(l => String(l.id) === '1') ? '1' : String(data[0]?.id ?? '1');
+      setSources(data.map(l => toSource(l, detectedId)));
+      setSelectedId(detectedId);
+      setDataSource(source);
+    });
+  }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
@@ -150,15 +167,15 @@ function SourceSelectionPage() {
   }, []);
 
   const selectedSource = useMemo(
-    () => sources.find((source) => source.id === selectedId) || sources[0],
-    [selectedId]
+    () => sources.find((source) => source.id === selectedId) || sources[0] || { id:'1', name:'Loading...', meta:'', icon: MapPin, detected: false },
+    [selectedId, sources]
   );
 
   const filteredSources = useMemo(() => {
     const term = query.trim().toLowerCase();
     if (!term) return sources.filter((source) => !source.detected);
     return sources.filter((source) => source.name.toLowerCase().includes(term));
-  }, [query]);
+  }, [query, sources]);
 
   const chooseSource = (id) => {
     setSelectedId(id);
@@ -209,7 +226,16 @@ function SourceSelectionPage() {
           <div className="src-column">
             <motion.div className="src-title-block" variants={fadeUp} custom={1} initial="hidden" animate="visible">
               <h1>Choose Your <span>Starting Point</span></h1>
-              <p>We found your location from the QR scan. Confirm it or choose a nearby campus spot.</p>
+              <p style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                {dataSource === 'loading' && 'Loading campus locations…'}
+                {dataSource === 'api'     && 'We found your location from the QR scan. Confirm it or choose a nearby campus spot.'}
+                {dataSource === 'local'  && (
+                  <>
+                    <WifiOff size={12} style={{ color: 'var(--src-muted, #888)' }} />
+                    <span style={{ color: 'var(--src-muted, #888)', fontSize: '0.78rem' }}>Offline — using local data</span>
+                  </>
+                )}
+              </p>
             </motion.div>
 
             <motion.div className="src-card src-detected-card" variants={fadeUp} custom={2} initial="hidden" animate="visible">

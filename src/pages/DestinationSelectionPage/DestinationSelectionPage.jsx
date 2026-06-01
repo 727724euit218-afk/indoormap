@@ -15,14 +15,14 @@ import {
   Navigation,
   Search,
   Sun,
-  TreePine,
   Utensils,
   LayoutGrid,
   Zap,
+  WifiOff,
 } from 'lucide-react';
 import BorderGlow from '../../components/shared/BorderGlow';
 import './DestinationSelectionPage.css';
-import { landmarks } from '../../components/CampusMap/campusData';
+import { fetchLocations } from '../../services/api';
 
 /* ── Animation variants ─────────────────────────────────── */
 const fadeUp = {
@@ -44,15 +44,17 @@ const categoryIconMap = {
   entry:    MapPin,
 };
 
-/* ── Destinations derived from campusData landmarks ──────── */
-const destinations = landmarks.map(lm => ({
-  id:       String(lm.id),
-  name:     lm.name,
-  meta:     lm.description,
-  icon:     categoryIconMap[lm.category] || MapPin,
-  category: lm.category,
-  landmark: lm,
-}));
+/* ── Map a location object → destination row shape ─────── */
+function toDestination(lm) {
+  return {
+    id:       String(lm.id),
+    name:     lm.name,
+    meta:     lm.description || lm.building_name || 'KGiSL Campus',
+    icon:     categoryIconMap[lm.category] || MapPin,
+    category: lm.category,
+    landmark: lm,
+  };
+}
 
 const categories = [
   { id: 'all',      label: 'All',       icon: LayoutGrid },
@@ -96,6 +98,17 @@ function DestinationSelectionPage() {
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
 
+  // ── Live data from backend ──────────────────────────────
+  const [destinations, setDestinations] = useState([]);
+  const [dataSource, setDataSource] = useState('loading'); // 'loading' | 'api' | 'local'
+
+  useEffect(() => {
+    fetchLocations().then(({ data, source }) => {
+      setDestinations(data.map(toDestination));
+      setDataSource(source);
+    });
+  }, []);
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', isDark);
     document.body.classList.toggle('dark', isDark);
@@ -121,11 +134,11 @@ function DestinationSelectionPage() {
       );
     }
     return list;
-  }, [query, activeCategory]);
+  }, [query, activeCategory, destinations]);
 
   const selectedDest = useMemo(
     () => destinations.find((d) => d.id === selectedId),
-    [selectedId]
+    [selectedId, destinations]
   );
 
   const goToPreview = () => {
@@ -188,10 +201,19 @@ function DestinationSelectionPage() {
       <main className="dst-shell">
         <ProgressSteps />
 
-        {/* Title */}
+        {/* Title + data source badge */}
         <motion.div className="dst-title-block" variants={fadeUp} custom={1} initial="hidden" animate="visible">
           <h1>Where do you want to go?</h1>
-          <p>Search or select your destination on campus</p>
+          <p style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            {dataSource === 'loading' && 'Loading campus locations…'}
+            {dataSource === 'api'     && 'Search or select your destination on campus'}
+            {dataSource === 'local'  && (
+              <>
+                <WifiOff size={12} style={{ color: 'var(--dst-muted)' }} />
+                <span style={{ color: 'var(--dst-muted)', fontSize: '0.78rem' }}>Offline — using local data</span>
+              </>
+            )}
+          </p>
         </motion.div>
 
         {/* Search Bar */}
@@ -253,7 +275,10 @@ function DestinationSelectionPage() {
         <motion.div variants={fadeUp} custom={3.5} initial="hidden" animate="visible">
           <div className="dst-results-count">
             <Compass size={11} />
-            {filtered.length} destination{filtered.length !== 1 ? 's' : ''}
+            {dataSource === 'loading'
+              ? 'Loading…'
+              : `${filtered.length} destination${filtered.length !== 1 ? 's' : ''}`
+            }
           </div>
         </motion.div>
 

@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   CheckCircle2, MapPin, Navigation, Clock,
-  Footprints, Home, ChevronRight, Award, Check
+  Footprints, Home, ChevronRight, Award, Check, Layers, X
 } from 'lucide-react';
 import './DestinationReachedPage.css';
 
@@ -65,10 +65,24 @@ export default function DestinationReachedPage() {
   const destination = localStorage.getItem('wayfinder-destination') || 'CSE Block';
 
   const [show, setShow] = useState(false);
+  const [showIndoorPopup, setShowIndoorPopup] = useState(false);
+
   useEffect(() => {
     const t = setTimeout(() => setShow(true), 80);
-    return () => clearTimeout(t);
-  }, []);
+    
+    // Check if destination is KGiSL building to show indoor map popup
+    let indoorTimer;
+    if (destination.toLowerCase() === 'kgisl') {
+      indoorTimer = setTimeout(() => {
+        setShowIndoorPopup(true);
+      }, 1500); // Popup 1.5s after showing success screen
+    }
+    
+    return () => {
+      clearTimeout(t);
+      if (indoorTimer) clearTimeout(indoorTimer);
+    };
+  }, [destination]);
 
   /* Stagger variants */
   const fadeUp = (delay = 0) => ({
@@ -211,6 +225,81 @@ export default function DestinationReachedPage() {
           KGiSL Campus Navigator
         </motion.div>
       </div>
+
+      {/* ── Indoor Navigation Popup ── */}
+      <AnimatePresence>
+        {showIndoorPopup && (
+          <motion.div 
+            className="drp-indoor-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+              background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(8px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100
+            }}
+          >
+            <motion.div 
+              className="drp-indoor-modal"
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              style={{
+                background: '#1e293b', borderRadius: '1rem', padding: '2rem', width: '90%', maxWidth: '380px',
+                border: '1px solid rgba(59,130,246,0.3)', boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                position: 'relative', textAlign: 'center'
+              }}
+            >
+              <button 
+                onClick={() => setShowIndoorPopup(false)}
+                style={{
+                  position: 'absolute', top: '1rem', right: '1rem', background: 'transparent',
+                  border: 'none', color: '#94a3b8', cursor: 'pointer', padding: '0.2rem'
+                }}
+              >
+                <X size={18} />
+              </button>
+              
+              <div style={{
+                width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(59,130,246,0.15)',
+                color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 1.25rem'
+              }}>
+                <Layers size={30} />
+              </div>
+              
+              <h3 style={{ margin: '0 0 0.5rem', color: '#f8fafc', fontSize: '1.25rem' }}>Indoor Navigation</h3>
+              <p style={{ margin: '0 0 1.5rem', color: '#94a3b8', fontSize: '0.9rem', lineHeight: '1.5' }}>
+                You have reached the KGiSL building! Would you like to view the indoor floor maps?
+              </p>
+              
+              <div style={{ display: 'flex', gap: '0.75rem', flexDirection: 'column' }}>
+                <button 
+                  onClick={() => navigate('/indoor/3')}
+                  style={{
+                    background: '#3b82f6', color: 'white', border: 'none', padding: '0.875rem',
+                    borderRadius: '0.5rem', fontWeight: 600, cursor: 'pointer', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', gap: '0.5rem'
+                  }}
+                >
+                  <Layers size={16} /> View Indoor Maps
+                </button>
+                <button 
+                  onClick={() => setShowIndoorPopup(false)}
+                  style={{
+                    background: 'rgba(255,255,255,0.05)', color: '#cbd5e1', border: '1px solid rgba(255,255,255,0.1)',
+                    padding: '0.875rem', borderRadius: '0.5rem', fontWeight: 500, cursor: 'pointer'
+                  }}
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

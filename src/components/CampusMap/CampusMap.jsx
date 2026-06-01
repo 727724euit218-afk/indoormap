@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import InteractiveCampusMap from '../map/InteractiveCampusMap';
-import { landmarks } from './campusData';
+import { useMapContext } from '../../context/MapContext';
 import RoutePanel from './RoutePanel';
 import './campusMap.css';
 
@@ -10,6 +10,8 @@ export default function CampusMap() {
   const [source, setSource]           = useState(null);
   const [destination, setDestination] = useState(null);
   const [routeSteps, setRouteSteps]   = useState([]);
+
+  const { landmarks = [], loading, error } = useMapContext() || {};
 
   // Load source + destination from localStorage
   useEffect(() => {
@@ -24,7 +26,7 @@ export default function CampusMap() {
       const d = landmarks.find(l => l.name === savedDest);
       if (d) setDestination(d);
     }
-  }, []);
+  }, [landmarks]);
 
   const handleSourceChange = (newSource) => {
     setSource(newSource);
@@ -37,6 +39,9 @@ export default function CampusMap() {
     if (newDest) localStorage.setItem('wayfinder-destination', newDest.name);
     else localStorage.removeItem('wayfinder-destination');
   };
+
+  if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading campus map...</div>;
+  if (error) return <div style={{ padding: '2rem', textAlign: 'center', color: 'red' }}>Error loading map: {error}</div>;
 
   return (
     <div className="campus-map-wrapper" style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem' }}>

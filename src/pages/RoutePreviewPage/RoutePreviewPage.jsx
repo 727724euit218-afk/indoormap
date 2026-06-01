@@ -20,8 +20,8 @@ import {
 } from 'lucide-react';
 import './RoutePreviewPage.css';
 import InteractiveCampusMap from '../../components/map/InteractiveCampusMap';
-import { landmarks } from '../../components/CampusMap/campusData';
-import { getNamedRouteSteps } from '../../hooks/useCampusRoute';
+import { useMapContext } from '../../context/MapContext';
+import { useCampusRouting } from '../../hooks/useCampusRoute';
 
 /* ── Animation variants ─────────────────────────────────── */
 const fadeUp = {
@@ -65,6 +65,9 @@ export default function RoutePreviewPage() {
   const [source, setSource] = useState(null);
   const [destination, setDestination] = useState(null);
 
+  const { landmarks = [], loading } = useMapContext() || {};
+  const { getNamedRouteSteps } = useCampusRouting();
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     document.body.classList.toggle('dark', theme === 'dark');
@@ -77,6 +80,8 @@ export default function RoutePreviewPage() {
     const savedSource = localStorage.getItem('wayfinder-source');
     const savedDest = localStorage.getItem('wayfinder-destination');
 
+    if (loading || !landmarks.length) return;
+
     if (savedSource) {
       const s = landmarks.find(l => l.name === savedSource);
       if (s) setSource(s);
@@ -87,13 +92,13 @@ export default function RoutePreviewPage() {
     }
 
     return () => { document.body.style.overflow = ''; };
-  }, []);
+  }, [landmarks, loading]);
 
   // ── Compute named route using landmark graph ─────────────────────────────
   const namedRoute = useMemo(() => {
     if (!source || !destination) return null;
     return getNamedRouteSteps(source.id, destination.id);
-  }, [source, destination]);
+  }, [source, destination, getNamedRouteSteps]);
 
   const routeDistance = useMemo(() => {
     return namedRoute?.totalDistance ?? 350;

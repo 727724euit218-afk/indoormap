@@ -1,5 +1,12 @@
 import React from 'react';
-import { categoryColors } from './campusData';
+const categoryColors = {
+  academic: '#1D3557',
+  hostel:   '#457B9D',
+  facility: '#F4A261',
+  admin:    '#E63946',
+  medical:  '#2A9D8F',
+  entry:    '#264653',
+};
 
 // SVG-based landmark marker — no Leaflet dependency.
 // Used as a simple display card when needed outside the interactive map.

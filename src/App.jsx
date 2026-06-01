@@ -9,6 +9,7 @@ import RoutePreviewPage from './pages/RoutePreviewPage/RoutePreviewPage';
 import LiveNavigationPage from './pages/LiveNavigationPage/LiveNavigationPage';
 import DestinationReachedPage from './pages/DestinationReachedPage/DestinationReachedPage';
 import NodeEditorPage from './pages/NodeEditorPage/NodeEditorPage';
+import InternalMapsPage from './pages/InternalMapsPage/InternalMapsPage';
 import CampusMap from './components/CampusMap/CampusMap';
 
 function App() {
@@ -21,6 +22,8 @@ function App() {
         <Route path="/preview" element={<RoutePreviewPage />} />
         <Route path="/navigate" element={<LiveNavigationPage />} />
         <Route path="/reached" element={<DestinationReachedPage />} />
+        <Route path="/indoor/:buildingId" element={<InternalMapsPage />} />
+        <Route path="/indoor" element={<InternalMapsPage />} />
         <Route path="/editor" element={<NodeEditorPage />} />
       </Routes>
     </Router>

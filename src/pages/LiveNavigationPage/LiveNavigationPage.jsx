@@ -8,7 +8,7 @@ import {
 import './LiveNavigationPage.css';
 import NavigationConfirmationPopup from '../../components/popups/NavigationConfirmationPopup';
 import InteractiveCampusMap from '../../components/map/InteractiveCampusMap';
-import { landmarks } from '../../components/CampusMap/campusData';
+import { useMapContext } from '../../context/MapContext';
 
 /* ── Route steps ── */
 const STEPS = [
@@ -56,8 +56,12 @@ export default function LiveNavigationPage() {
   const timerRef    = useRef(null);
   const triggeredRef= useRef(new Set());
 
+  const { landmarks = [], loading } = useMapContext() || {};
+
   // Load source and destination from localStorage
   useEffect(() => {
+    if (loading || !landmarks.length) return;
+    
     const savedSource = localStorage.getItem('wayfinder-source');
     const savedDest = localStorage.getItem('wayfinder-destination');
     
@@ -69,7 +73,7 @@ export default function LiveNavigationPage() {
       const d = landmarks.find(l => l.name === savedDest);
       if (d) setDestination(d);
     }
-  }, []);
+  }, [landmarks, loading]);
 
   const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
 
